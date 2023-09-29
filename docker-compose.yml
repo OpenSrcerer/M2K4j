@@ -1,0 +1,10 @@
+# FOR DEVELOPMENT PURPOSES ONLY. DO NOT USE IN PRODUCTION
+
+version: "3.8"
+
+services:
+  m2k4k:
+    container_name: m2k4k-instance
+    build: .
+    env_file:
+      - .env
