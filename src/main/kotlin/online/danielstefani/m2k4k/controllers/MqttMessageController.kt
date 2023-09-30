@@ -64,7 +64,7 @@ class MqttMessageController(
      */
     @ServiceActivator(inputChannel = "mqttErrorChannel")
     fun handleMqttError(errorMessage: ErrorMessage) {
-        logger.error("[connection->error]: $errorMessage")
+        logger.error("[stream->error]: $errorMessage")
     }
 
     /**
