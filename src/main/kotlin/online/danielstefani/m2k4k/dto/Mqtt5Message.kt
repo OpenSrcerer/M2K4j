@@ -1,7 +1,6 @@
 package online.danielstefani.m2k4k.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.datatypes.MqttTopic
 import com.hivemq.client.mqtt.datatypes.MqttUtf8String
 import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties

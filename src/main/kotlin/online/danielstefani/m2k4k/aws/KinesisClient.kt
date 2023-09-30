@@ -59,7 +59,7 @@ class KinesisClient(
     fun Flux<Mqtt5Message>.toPutRecordsRequest(): Mono<PutRecordsRequest> {
         return this.map {
                 PutRecordsRequestEntry.builder()
-                    .partitionKey(it.topic.toString()) // Use serial for partition key
+                    .partitionKey(it.topic) // Use serial for partition key
                     .data(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(it)))
                     .build()
             }
