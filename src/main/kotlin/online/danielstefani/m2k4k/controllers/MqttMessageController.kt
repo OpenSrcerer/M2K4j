@@ -56,7 +56,7 @@ class MqttMessageController(
             messageCacheQueue.add(message.payload)
         else
             messageCache.add(message.payload)
-        logger.trace("[stream->receiver] Added message to cache: ${message.payload.payload}")
+        logger.trace("[handler->receiver] Added message to cache: ${message.payload.payload}")
     }
 
     /**
@@ -64,7 +64,7 @@ class MqttMessageController(
      */
     @ServiceActivator(inputChannel = "mqttErrorChannel")
     fun handleMqttError(errorMessage: ErrorMessage) {
-        logger.error("[stream->error]: $errorMessage")
+        logger.error("[handler->error]: $errorMessage")
     }
 
     /**
@@ -74,7 +74,7 @@ class MqttMessageController(
     @Scheduled(initialDelay = 20, fixedRate = 20, timeUnit = TimeUnit.SECONDS)
     fun flush() {
         if (messageCache.isEmpty()) {
-            logger.info("[stream->flusher] No messages received during this period, ignoring.")
+            logger.info("[handler->flusher] No messages received during this period, ignoring.")
             return
         }
 
@@ -88,14 +88,14 @@ class MqttMessageController(
         // Send the messages using local scope cache
         kinesisClient.pushMessagesToKinesis(localCache)
             .retryWhen(Retry.backoff(MAX_SAVE_ATTEMPTS, SAVE_TIMEOUT))
-            .log("[stream->flusher]", Level.FINE)
+            .log("[handler->flusher]", Level.FINE)
             .subscribe()
     }
 
     @Scheduled(initialDelay = 0, fixedRate = 10, timeUnit = TimeUnit.MINUTES)
     fun restartStatistics() {
         messagesReceivedEndClock = Instant.now()
-        logger.info("[stream->statistics] Messages { ($messagesReceivedStartClock - $messagesReceivedEndClock) " +
+        logger.info("[handler->statistics] Messages { ($messagesReceivedStartClock - $messagesReceivedEndClock) " +
                 "[Received $messagesReceived] }")
         messagesReceivedStartClock = Instant.now()
         messagesReceived = 0

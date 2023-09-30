@@ -40,7 +40,7 @@ class MqttClientProxyService(
         val client = Mqtt5Client.builder()
             .identifier(
                 "${mqttConfig.clientId}-${UUID.randomUUID()}".apply {
-                    logger.info("[mqttclient->reaper] // Building new MQTT client: $this")
+                    logger.info("[client->mqtt->reaper] // Building new MQTT client: $this")
                 }
             )
             .serverHost(mqttConfig.host!!)
@@ -79,16 +79,16 @@ class MqttClientProxyService(
             .noSessionExpiry()
             .cleanStart(true)
             .applyConnect()
-            .doOnSuccess { logger.info("[mqttclient] // " +
+            .doOnSuccess { logger.info("[client->mqtt] // " +
                     "Connected to ${mqttConfig.host}:${mqttConfig.port}, ${it.reasonCode}") }
-            .doOnError { logger.error("[mqttclient] // " +
+            .doOnError { logger.error("[client->mqtt] // " +
                     "Connection failed to ${mqttConfig.host}:${mqttConfig.port}, ${it.message}") }
-            .doOnSubscribe { logger.info("[mqttclient] // " +
+            .doOnSubscribe { logger.info("[client->mqtt] // " +
                     "Connecting to... ${mqttConfig.host}:${mqttConfig.port}")
             }
             .retryWhen {
                 Flowable.timer(30, TimeUnit.SECONDS)
-                    .doOnNext { logger.info("[mqttclient] // " +
+                    .doOnNext { logger.info("[client->mqtt] // " +
                             "Retrying connection to ${mqttConfig.host}:${mqttConfig.port}...") }
             }
             .ignoreElement()
@@ -117,7 +117,7 @@ class MqttClientProxyService(
                 inputChannel.send(MutableMessageBuilder.withPayload(Mqtt5Message(it)).build())
             }
             .doOnSubscribe {
-                logger.info("[mqttclient] // " + "Subscribing to topics [" +
+                logger.info("[client->mqtt] // " + "Subscribing to topics [" +
                         "${mqttConfig.getSubscriptions().joinToString(", ") { "'${it}'" }}]")
             }
             .subscribe()
@@ -126,11 +126,11 @@ class MqttClientProxyService(
     private fun shutdownClient(): Completable {
         if (mqttClient == null || !mqttClient!!.state.isConnected)
             return Completable.complete()
-                .doOnComplete { logger.info("[mqttclient->reaper] // " +
+                .doOnComplete { logger.info("[client->mqtt->reaper] // " +
                         "Old MQTT client was null or disconnected, ignoring it") }
 
         return mqttClient!!.disconnect()
-            .doOnComplete { logger.info("[mqttclient->reaper] // " +
+            .doOnComplete { logger.info("[client->mqtt->reaper] // " +
                     "Reaped old MQTT client ${mqttClient!!.config.clientIdentifier.get()}") }
     }
 }

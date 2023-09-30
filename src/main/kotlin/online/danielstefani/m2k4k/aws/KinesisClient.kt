@@ -47,12 +47,12 @@ class KinesisClient(
     fun pushMessagesToKinesis(messages: List<Mqtt5Message>): Flux<PutRecordsResponse> {
         return Flux.fromIterable(messages)
             .onBackpressureBuffer(MAX_SAVE_BUFFER_SIZE)
-            .window(MAX_KINESIS_PUT_REQUEST_LENGTH) // Flux<Flux<Tuple<Topic, Message>>> (window of 500)
+            .window(MAX_KINESIS_PUT_REQUEST_LENGTH) // Flux<Flux<Mqtt5Message>> (window of 500)
             .flatMap { it.toPutRecordsRequest() } // Flux<PutRecordsRequest>
             .flatMap { kinesisClient.putRecords(it).toMono() }
-            .doOnError { logger.error("[kinesis->client] // " +
+            .doOnError { logger.error("[client->kinesis] // " +
                     "Failed to send messages to Kinesis stream ${kinesisConfig.kinesisStreamArn}") }
-            .doOnComplete { logger.info("[kinesis->client] //" +
+            .doOnComplete { logger.info("[client->kinesis] //" +
                     "Sent ${messages.size} message bundles to Kinesis stream ${kinesisConfig.kinesisStreamArn}") }
     }
 
