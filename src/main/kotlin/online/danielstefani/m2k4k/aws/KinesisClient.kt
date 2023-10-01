@@ -71,7 +71,8 @@ class KinesisClient(
                     "Sent ${messages.size} messages to Kinesis stream ${kinesisConfig.kinesisStreamArn}") }
             .onBackpressureBuffer(MAX_SAVE_BUFFER_SIZE)
             .parallel()
-            .map { it.toPutRecordsRequest(kinesisConfig.kinesisPartitioningStrategy!!) } // Flux<PutRecordsRequestEntry>
+            .map { it.toPutRecordsRequest(
+                PartitioningStrategy.getComputedStrategy(kinesisConfig.kinesisPartitioningStrategy!!)) } // Flux<PutRecordsRequestEntry>
             .sequential()
             .pushMessagesToKinesis() // Returns unsuccessful attempts, prepared for a retry
             .doOnNext { messageDlq.add(it) } // Put messages that didn't go through in the DLQ to try again later
@@ -79,9 +80,8 @@ class KinesisClient(
 
     @Scheduled(initialDelay = 1, fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     private fun retryFailedMessagesOnce() {
-        if (messageDlq.isEmpty()) {
+        if (messageDlq.isEmpty())
             return
-        }
 
         val messageDlqSize = messageDlq.size();
         Flux.fromIterable(messageDlq.toList())
