@@ -1,4 +1,4 @@
-package online.danielstefani.m2k4k.controllers
+package online.danielstefani.m2k4j.controllers
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

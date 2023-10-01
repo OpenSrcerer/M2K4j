@@ -9,4 +9,4 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
 }
 
-rootProject.name = "M2K4K"
+rootProject.name = "M2K4j"

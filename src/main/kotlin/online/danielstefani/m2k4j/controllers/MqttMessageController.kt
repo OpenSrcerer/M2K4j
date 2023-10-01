@@ -1,9 +1,9 @@
-package online.danielstefani.m2k4k.controllers
+package online.danielstefani.m2k4j.controllers
 
-import online.danielstefani.m2k4k.aws.KinesisClient
-import online.danielstefani.m2k4k.dto.Mqtt5Message
-import online.danielstefani.m2k4k.mqtt.MqttClientProxyService
-import online.danielstefani.m2k4k.mqtt.MqttConfig
+import online.danielstefani.m2k4j.aws.KinesisClient
+import online.danielstefani.m2k4j.dto.Mqtt5Message
+import online.danielstefani.m2k4j.mqtt.MqttClientProxyService
+import online.danielstefani.m2k4j.mqtt.MqttConfig
 import org.slf4j.LoggerFactory
 import org.springframework.integration.annotation.ServiceActivator
 import org.springframework.messaging.Message

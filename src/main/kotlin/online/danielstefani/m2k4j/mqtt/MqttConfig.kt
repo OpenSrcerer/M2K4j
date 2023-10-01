@@ -1,4 +1,4 @@
-package online.danielstefani.m2k4k.mqtt
+package online.danielstefani.m2k4j.mqtt
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value

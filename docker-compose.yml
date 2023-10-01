@@ -3,8 +3,8 @@
 version: "3.8"
 
 services:
-  m2k4k:
-    container_name: m2k4k-instance
+  M2K4j:
+    container_name: M2K4j-instance
     build: .
     env_file:
       - .env

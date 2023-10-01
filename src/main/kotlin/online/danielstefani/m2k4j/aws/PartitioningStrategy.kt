@@ -1,4 +1,4 @@
-package online.danielstefani.m2k4k.aws
+package online.danielstefani.m2k4j.aws
 
 enum class PartitioningStrategy {
     /**

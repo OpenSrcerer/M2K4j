@@ -1,6 +1,6 @@
-package online.danielstefani.m2k4k.aws
+package online.danielstefani.m2k4j.aws
 
-import online.danielstefani.m2k4k.dto.Mqtt5Message
+import online.danielstefani.m2k4j.dto.Mqtt5Message
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope

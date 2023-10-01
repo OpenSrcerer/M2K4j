@@ -1,4 +1,4 @@
-package online.danielstefani.m2k4k.mqtt
+package online.danielstefani.m2k4j.mqtt
 
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client
@@ -8,7 +8,7 @@ import com.hivemq.client.mqtt.mqtt5.message.auth.Mqtt5SimpleAuth
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription
 import io.reactivex.Completable
 import io.reactivex.Flowable
-import online.danielstefani.m2k4k.dto.Mqtt5Message
+import online.danielstefani.m2k4j.dto.Mqtt5Message
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.integration.support.MutableMessageBuilder

@@ -1,4 +1,4 @@
-package online.danielstefani.m2k4k.dto
+package online.danielstefani.m2k4j.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -7,7 +7,7 @@ import com.hivemq.client.mqtt.datatypes.MqttTopic
 import com.hivemq.client.mqtt.datatypes.MqttUtf8String
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PayloadFormatIndicator
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
-import online.danielstefani.m2k4k.aws.PartitioningStrategy
+import online.danielstefani.m2k4j.aws.PartitioningStrategy
 import org.slf4j.LoggerFactory
 import org.springframework.util.DigestUtils
 import software.amazon.awssdk.core.SdkBytes

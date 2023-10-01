@@ -1,4 +1,4 @@
-package online.danielstefani.m2k4k.aws
+package online.danielstefani.m2k4j.aws
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
