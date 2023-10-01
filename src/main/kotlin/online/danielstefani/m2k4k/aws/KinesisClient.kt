@@ -63,12 +63,8 @@ class KinesisClient(
             .region(Region.of(kinesisConfig.awsRegion))
             .build()
 
-    fun pushMessagesToKinesis(messages: List<Mqtt5Message>): Flux<PutRecordsRequestEntry> {
+    fun pushMessagesToKinesis(messages: List<Mqtt5Message>): Mono<List<PutRecordsRequestEntry>> {
         return Flux.fromIterable(messages)
-            .doOnError { logger.error("[client->kinesis] // " +
-                    "Failed to send messages to Kinesis stream ${kinesisConfig.kinesisStreamArn}") }
-            .doOnComplete { logger.info("[client->kinesis] //" +
-                    "Sent ${messages.size} messages to Kinesis stream ${kinesisConfig.kinesisStreamArn}") }
             .onBackpressureBuffer(MAX_SAVE_BUFFER_SIZE)
             .parallel()
             .map { it.toPutRecordsRequest(
@@ -76,6 +72,23 @@ class KinesisClient(
             .sequential()
             .pushMessagesToKinesis() // Returns unsuccessful attempts, prepared for a retry
             .doOnNext { messageDlq.add(it) } // Put messages that didn't go through in the DLQ to try again later
+            .collectList()
+            .doOnError { logger.error("[client->kinesis] // " +
+                    "Failed to send messages to Kinesis stream ${kinesisConfig.kinesisStreamArn}") }
+            .doOnSuccess {
+                if (it.isEmpty()) {
+                    logger.info(
+                        "[client->kinesis] // Successfully sent all (${messages.size}) messages " +
+                                "to Kinesis stream ${kinesisConfig.kinesisStreamArn}")
+                } else {
+                    logger.info(
+                        "[client->kinesis] // Sent ${messages.size - it.size}/${messages.size}" +
+                                "(${messages.size}) of messages to Kinesis " +
+                                "stream ${kinesisConfig.kinesisStreamArn}; " +
+                                "Failed messaged were put in the DLQ, and will be " +
+                                "retried later (only once) then discarded if they fail again.")
+                }
+            }
     }
 
     @Scheduled(initialDelay = 1, fixedRate = 1, timeUnit = TimeUnit.MINUTES)
@@ -83,7 +96,7 @@ class KinesisClient(
         if (messageDlq.isEmpty())
             return
 
-        val messageDlqSize = messageDlq.size();
+        val messageDlqSize = messageDlq.size()
         Flux.fromIterable(messageDlq.toList())
             .pushMessagesToKinesis()
             .doOnSubscribe {
