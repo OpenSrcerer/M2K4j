@@ -88,7 +88,7 @@ This is a simple but effective method to spread messages evenly. Doesn't need co
 In this approach, the MQTT topic of every message is used as its partitioning key. This can create hot shards, so only use it if you know that you are subscribing to multiple topics.
 
 ### 3. `JSON_KEY`
-Here, you pass a [JSON Pointer Expression]() to the `AWS_KINESIS_PARTITIONING_STRATEGY` environment variable. M2K will extract the JSON key and use it as the partitioning key.
+Here, you pass a [JSON Pointer Expression](https://www.baeldung.com/json-pointer) to the `AWS_KINESIS_PARTITIONING_STRATEGY` environment variable. M2K will extract the JSON key and use it as the partitioning key.
 
 **Used only if your MQTT payloads are JSON-formatted.** If you have a mixed-payload system where some payloads use JSON and some don't, this strategy will be used for the JSON payloads, `PAYLOAD_HASH` for the others, and `MQTT_TOPIC` for messages with no payload.
 
