@@ -11,6 +11,9 @@ class KinesisConfig {
     @Value("\${aws.region}")
     var awsRegion: String? = null
 
+    @Value("\${aws.kinesis.partitioning-strategy}")
+    var kinesisPartitioningStrategy: PartitioningStrategy? = null
+
     @Value("\${aws.kinesis.stream.arn}")
     var kinesisStreamArn: String? = null
 
