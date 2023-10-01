@@ -1,5 +1,5 @@
 <p style="text-align: center">
-    <img src="img/m2klogo.png" alt="logo" style="max-width: 250px"/>
+    <img src="img/m2klogo.png" alt="logo" width="250"/>
 </p>
 
 ## What's M2K?
