@@ -1,4 +1,4 @@
-<p style="text-align: center">
+<p align="center">
     <img src="img/m2klogo.png" alt="logo" width="250"/>
 </p>
 
