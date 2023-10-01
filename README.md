@@ -29,9 +29,9 @@ In the root of this project you will find a file named `.env.example`. This file
 version: "3.8"
 
 services:
-  M2K4j:
+  m2k4j:
     container_name: M2K4j-instance
-    image: ghcr.io/opensrcerer/m2k4j:v0.1.1
+    image: ghcr.io/opensrcerer/m2k4j:v0.1.2
     env_file:
       - .env
 ```
