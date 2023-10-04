@@ -17,6 +17,8 @@ jobs:
           distribution: corretto
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
+      - name: Test build with trace
+        run: ./gradlew build --stacktrace
       - name: Generate kover coverage report
         run: ./gradlew koverXmlReport
 
