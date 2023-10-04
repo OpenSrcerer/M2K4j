@@ -1,11 +1,10 @@
 package online.danielstefani.m2k4j.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.hivemq.client.mqtt.datatypes.MqttTopic
-import com.hivemq.client.mqtt.datatypes.MqttUtf8String
-import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PayloadFormatIndicator
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
 import online.danielstefani.m2k4j.aws.PartitioningStrategy
 import org.slf4j.LoggerFactory
@@ -16,16 +15,16 @@ import java.nio.ByteBuffer
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Mqtt5Message @JsonCreator constructor(
-    val topic: String,
-    val qos: Int,
-    val retain: Boolean,
-    val messageExpiryInterval: Long?,
-    val payloadFormatIndicator: Mqtt5PayloadFormatIndicator?,
-    val contentType: MqttUtf8String?,
-    val responseTopic: MqttTopic?,
-    val correlationData: ByteBuffer?,
-    val userProperties: Map<String, String>?,
-    val payload: ByteBuffer?
+    @JsonProperty("topic")                  val topic: String,
+    @JsonProperty("qos")                    val qos: Int,
+    @JsonProperty("retain")                 val retain: Boolean,
+    @JsonProperty("messageExpiryInterval")  val messageExpiryInterval: Long?,
+    @JsonProperty("payloadFormatIndicator") val payloadFormatIndicator: String?,
+    @JsonProperty("contentType")            val contentType: String?,
+    @JsonProperty("responseTopic")          val responseTopic: String?,
+    @JsonProperty("correlationData")        val correlationData: ByteBuffer?,
+    @JsonProperty("userProperties")         val userProperties: Map<String, String>?,
+    @JsonProperty("payload")                val payload: ByteBuffer?
 ) {
     constructor(mqtt5Message: Mqtt5Message, expiryInterval: Long) : this(
         mqtt5Message.topic,
@@ -45,9 +44,9 @@ class Mqtt5Message @JsonCreator constructor(
         mqtt5Publish.qos.code,
         mqtt5Publish.isRetain,
         mqtt5Publish.messageExpiryInterval.let { if (it.isPresent) it.asLong else null },
-        mqtt5Publish.payloadFormatIndicator.orElse(null),
-        mqtt5Publish.contentType.orElse(null),
-        mqtt5Publish.responseTopic.orElse(null),
+        mqtt5Publish.payloadFormatIndicator.orElse(null)?.toString(),
+        mqtt5Publish.contentType.orElse(null)?.toString(),
+        mqtt5Publish.responseTopic.orElse(null)?.toString(),
         mqtt5Publish.correlationData.orElse(null),
         mqtt5Publish.userProperties.asList()
             .let {
@@ -66,18 +65,22 @@ class Mqtt5Message @JsonCreator constructor(
         strategy: Pair<PartitioningStrategy, String?>
     ): PutRecordsRequestEntry {
         val partitionKey = when (strategy.first) {
-            PartitioningStrategy.PAYLOAD_HASH ->
-                if (payload != null)
-                    DigestUtils.md5DigestAsHex(this.payload.toString().toByteArray(Charsets.UTF_8))
-                else this.topic
+            PartitioningStrategy.PAYLOAD_HASH -> getPayloadMd5OrIfNullGetTopic()
             PartitioningStrategy.MQTT_TOPIC -> this.topic
             PartitioningStrategy.JSON_KEY -> extractPartitionKeyFromJson(strategy.second!!)
         }
 
         return PutRecordsRequestEntry.builder()
-                .partitionKey(partitionKey) // Use serial for partition key
+                .partitionKey(partitionKey) // Use strategy for partition key
                 .data(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(this)))
                 .build()
+    }
+
+    @JsonIgnore
+    internal fun getPayloadMd5OrIfNullGetTopic(): String {
+        return if (payload != null)
+            DigestUtils.md5DigestAsHex(this.payload.toString().toByteArray(Charsets.UTF_8))
+        else this.topic
     }
 
     /**
@@ -87,7 +90,7 @@ class Mqtt5Message @JsonCreator constructor(
     private fun extractPartitionKeyFromJson(jsonPtrExpr: String): String {
         if (payload == null) {
             logger.debug("[client->kinesis] //" +
-                    "Failed to use JSON_KEY because the payload was null for payload: " +
+                    "Failed to use JSON_KEY because the payload was null for message: " +
                     "${objectMapper.writeValueAsBytes(this)}. Falling back to MQTT_TOPIC.")
             return this.topic
         }
@@ -97,7 +100,7 @@ class Mqtt5Message @JsonCreator constructor(
             partitionKey = objectMapper.readTree(payload.array()).at(jsonPtrExpr).asText()
         } catch (ex: Exception) {
             logger.debug("[client->kinesis] //" +
-                    "Failed to use JSON_KEY because of exception [${ex.message}] for payload: " +
+                    "Failed to use JSON_KEY because of exception [${ex.message}] for message: " +
                     "${objectMapper.writeValueAsBytes(this)}. Falling back to PAYLOAD_HASH.")
             return DigestUtils.md5DigestAsHex(this.payload.toString().toByteArray(Charsets.UTF_8))
         }

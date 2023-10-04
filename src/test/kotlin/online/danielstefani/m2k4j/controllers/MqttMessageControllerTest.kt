@@ -43,7 +43,7 @@ class MqttMessageControllerTest {
 
     @Test
     fun whenPushMqttMessage_thenShouldCache() {
-        messageController.receive(MessageUtils.WRAPPED_MQTT5_MESSAGE)
+        messageController.receive(MessageUtils.genDefaultMessage().next())
 
         assertEquals(1, mqttCache.messageCache.size)
         assertEquals(0, mqttCache.messageCacheQueue.size)
