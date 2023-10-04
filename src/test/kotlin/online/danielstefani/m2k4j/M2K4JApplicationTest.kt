@@ -8,7 +8,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 
 @SpringBootTest(
-	classes = [M2K4JApplication::class],
 	webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 class M2K4JApplicationTest {

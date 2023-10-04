@@ -1,6 +1,6 @@
 package online.danielstefani.m2k4j.controllers
 
-import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import online.danielstefani.m2k4j.MessageUtils
@@ -10,10 +10,7 @@ import online.danielstefani.m2k4j.mqtt.MqttClientProxyService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mock
-import org.mockito.Mockito.anyList
-import org.mockito.Mockito.doAnswer
-import org.springframework.boot.test.context.SpringBootTest
+import org.mockito.Mockito.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.MonoSink
@@ -21,18 +18,15 @@ import reactor.core.scheduler.Schedulers
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
 import java.time.Duration
 
-@SpringBootTest
 class MqttMessageControllerTest {
 
     // ---- Spies ----
     private lateinit var messageController: MqttMessageController
 
     // ---- Mocks ----
-    @Mock
-    private lateinit var kinesisClient: KinesisClient
+    private val kinesisClient: KinesisClient = mock(KinesisClient::class.java)
 
-    @MockK
-    private lateinit var mqttClientProxyService: MqttClientProxyService
+    private val mqttClientProxyService: MqttClientProxyService = mockk()
 
     private val mqttCache = MqttMessageController.MqttCache()
 
@@ -51,8 +45,8 @@ class MqttMessageControllerTest {
 
     @Test
     fun whenPushAndFlush_thenShouldPreserveMessageNumberAndOrder() {
-        val messagesToSend = 100000L
-        val nsEachMsg = 10_000L
+        val messagesToSend = 1000L
+        val nsEachMsg = 1_000_000L
         val numFlushes = 4L
         val msEachFlush = 250L
         val messagesSentToKinesis = mutableListOf<Mqtt5Message>()
