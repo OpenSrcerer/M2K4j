@@ -23,7 +23,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/m2k4j/build/reports/kover/report.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_FOR_KOVER }}
           title: Code Coverage
           update-comment: true
           min-coverage-overall: 80
