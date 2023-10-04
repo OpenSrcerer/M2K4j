@@ -27,6 +27,19 @@ class Mqtt5Message @JsonCreator constructor(
     val userProperties: Map<String, String>?,
     val payload: ByteBuffer?
 ) {
+    constructor(mqtt5Message: Mqtt5Message, expiryInterval: Long) : this(
+        mqtt5Message.topic,
+        mqtt5Message.qos,
+        mqtt5Message.retain,
+        expiryInterval,
+        mqtt5Message.payloadFormatIndicator,
+        mqtt5Message.contentType,
+        mqtt5Message.responseTopic,
+        mqtt5Message.correlationData,
+        mqtt5Message.userProperties,
+        mqtt5Message.payload
+    )
+
     constructor(mqtt5Publish: Mqtt5Publish) : this(
         mqtt5Publish.topic.toString(),
         mqtt5Publish.qos.code,

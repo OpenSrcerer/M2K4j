@@ -68,7 +68,7 @@ class KinesisClient(
             .onBackpressureBuffer(MAX_SAVE_BUFFER_SIZE)
             .parallel()
             .map { it.toPutRecordsRequest(
-                PartitioningStrategy.getComputedStrategy(kinesisConfig.kinesisPartitioningStrategy!!)) } // Flux<PutRecordsRequestEntry>
+                PartitioningStrategy.getComputedStrategy(kinesisConfig.kinesisPartitioningStrategy!!)) }
             .sequential()
             .pushMessagesToKinesis() // Returns unsuccessful attempts, prepared for a retry
             .doOnNext { messageDlq.add(it) } // Put messages that didn't go through in the DLQ to try again later

@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/health")
 class HealthController {
     @GetMapping
     fun healthCheck(): Mono<String> {
-        return Mono.just("Oooooh-ooh! I'm still alive, yeeeeeeaaaahaaa!")
+        return Mono.just("The cake is a lie. \uD83C\uDF82")
     }
 }

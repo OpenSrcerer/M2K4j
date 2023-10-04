@@ -26,14 +26,19 @@ import java.util.logging.Level
  * @see MqttConfig
  * @see MqttClientProxyService
  */
+@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Component
 class MqttMessageController(
     private val kinesisClient: KinesisClient,
     private val mqttClientProxyService: MqttClientProxyService,
+    private val mqttCache: MqttCache = MqttCache()
 ) {
     private var toQueue = false
-    private val messageCacheQueue = LinkedList<Mqtt5Message>()
-    private var messageCache = mutableListOf<Mqtt5Message>()
+
+    class MqttCache {
+        internal var messageCacheQueue = LinkedList<Mqtt5Message>()
+        internal var messageCache = mutableListOf<Mqtt5Message>()
+    }
 
     companion object {
         private val logger = LoggerFactory.getLogger(MqttMessageController::class.java)
@@ -53,9 +58,9 @@ class MqttMessageController(
         messagesReceived += 1 // Statistics
         // Add to cache (messages are not pushed instantly, but in batches)
         if (toQueue)
-            messageCacheQueue.add(message.payload)
+            mqttCache.messageCacheQueue.add(message.payload)
         else
-            messageCache.add(message.payload)
+            mqttCache.messageCache.add(message.payload)
         logger.trace("[handler->receiver] Added message to cache: ${message.payload.payload}")
     }
 
@@ -73,17 +78,17 @@ class MqttMessageController(
      */
     @Scheduled(initialDelay = 20, fixedRate = 20, timeUnit = TimeUnit.SECONDS)
     fun flush() {
-        if (messageCache.isEmpty()) {
+        if (mqttCache.messageCache.isEmpty()) {
             logger.info("[handler->flusher] No messages received during this period, ignoring.")
             return
         }
 
         toQueue = true // Redirect messages to queue
-        val localCache = messageCache // Yoink the cache to this scope
-        messageCache = mutableListOf() // Replace the other cache with a new one (prevents copying)
+        val localCache = mqttCache.messageCache // Yoink the cache to this scope
+        mqttCache.messageCache = mutableListOf() // Replace the other cache with a new one (prevents copying)
         toQueue = false // Redirect messages back to list cache
-        messageCache.addAll(messageCacheQueue) // Add all messages that came in during handover to actual cache
-        messageCacheQueue.clear() // Clear queue
+        mqttCache.messageCache.addAll(mqttCache.messageCacheQueue) // Add all messages that came in during handover to actual cache
+        mqttCache.messageCacheQueue.clear() // Clear queue
 
         // Send the messages using local scope cache
         kinesisClient.pushMessagesToKinesis(localCache)
