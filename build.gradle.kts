@@ -40,6 +40,7 @@ dependencies {
     // ---- Test ----
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.4")
     testImplementation("io.projectreactor:reactor-test:3.5.10")
+    implementation("com.ninja-squad:springmockk:4.0.2")
 }
 
 tasks.withType<KotlinCompile> {
