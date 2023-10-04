@@ -1,5 +1,6 @@
 package online.danielstefani.m2k4j.aws
 
+import online.danielstefani.m2k4j.mqtt.Mqtt5Consumer
 import online.danielstefani.m2k4j.dto.Mqtt5Message
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 class KinesisClient(
     private val kinesisConfig: KinesisConfig
-) {
+) : Mqtt5Consumer<List<PutRecordsRequestEntry>> {
     private class SynchronizedDeadLetterQueue {
         private val messageDlq = LinkedList<PutRecordsRequestEntry>()
 
@@ -63,12 +64,13 @@ class KinesisClient(
             .region(Region.of(kinesisConfig.awsRegion))
             .build()
 
-    fun pushMessagesToKinesis(messages: List<Mqtt5Message>): Mono<List<PutRecordsRequestEntry>> {
+    override fun pushMessages(messages: List<Mqtt5Message>): Mono<List<PutRecordsRequestEntry>> {
         return Flux.fromIterable(messages)
             .onBackpressureBuffer(MAX_SAVE_BUFFER_SIZE)
             .parallel()
             .map { it.toPutRecordsRequest(
-                PartitioningStrategy.getComputedStrategy(kinesisConfig.kinesisPartitioningStrategy!!)) }
+                PartitioningStrategy.getComputedStrategy(kinesisConfig.kinesisPartitioningStrategy!!)
+            ) }
             .sequential()
             .pushMessagesToKinesis() // Returns unsuccessful attempts, prepared for a retry
             .doOnNext { messageDlq.add(it) } // Put messages that didn't go through in the DLQ to try again later

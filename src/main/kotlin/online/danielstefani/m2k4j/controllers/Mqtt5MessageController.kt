@@ -1,6 +1,6 @@
 package online.danielstefani.m2k4j.controllers
 
-import online.danielstefani.m2k4j.aws.KinesisClient
+import online.danielstefani.m2k4j.mqtt.Mqtt5Consumer
 import online.danielstefani.m2k4j.dto.Mqtt5Message
 import online.danielstefani.m2k4j.mqtt.MqttClientProxyService
 import online.danielstefani.m2k4j.mqtt.MqttConfig
@@ -28,8 +28,8 @@ import java.util.logging.Level
  */
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Component
-class MqttMessageController(
-    private val kinesisClient: KinesisClient,
+class Mqtt5MessageController(
+    private val kinesisClient: Mqtt5Consumer<*>,
     private val mqttClientProxyService: MqttClientProxyService,
     private val mqttCache: MqttCache = MqttCache()
 ) {
@@ -41,7 +41,7 @@ class MqttMessageController(
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(MqttMessageController::class.java)
+        private val logger = LoggerFactory.getLogger(Mqtt5MessageController::class.java)
 
         /* Arbitrary values */
         private val SAVE_TIMEOUT = Duration.ofMillis(2000)
@@ -91,7 +91,7 @@ class MqttMessageController(
         mqttCache.messageCacheQueue.clear() // Clear queue
 
         // Send the messages using local scope cache
-        kinesisClient.pushMessagesToKinesis(localCache)
+        kinesisClient.pushMessages(localCache)
             .retryWhen(Retry.backoff(MAX_SAVE_ATTEMPTS, SAVE_TIMEOUT))
             .log("[handler->flusher]", Level.FINE)
             .subscribe()
