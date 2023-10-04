@@ -25,7 +25,7 @@ jobs:
         uses: mi-kas/kover-report@v1
         with:
           path: |
-            ${{ github.workspace }}/m2k4j/build/reports/kover/report.xml
+            ${{ github.workspace }}/build/reports/kover/report.xml
           token: ${{ secrets.PAT_FOR_KOVER }}
           title: Code Coverage
           update-comment: true
