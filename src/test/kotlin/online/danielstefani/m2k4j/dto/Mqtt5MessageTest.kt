@@ -15,6 +15,7 @@ class Mqtt5MessageTest {
     @Test
     fun whenPassPartitionStrategy_thenShouldUseCorrectKey() {
         val message = MessageUtils.genDefaultMessage().next().payload
+        val messageNoPayload = Mqtt5Message(MessageUtils.genDefaultMessage().next().payload, null)
 
         val messageWithPayloadHashKey = message.toPutRecordsRequest(
             Pair(PartitioningStrategy.PAYLOAD_HASH, null)).partitionKey()
@@ -24,11 +25,17 @@ class Mqtt5MessageTest {
             Pair(PartitioningStrategy.JSON_KEY, "/id")).partitionKey()
         val messageWithNestedJsonKey = message.toPutRecordsRequest(
             Pair(PartitioningStrategy.JSON_KEY, "/obj/nested-id")).partitionKey()
+        val messageWithMissingJsonKey = message.toPutRecordsRequest(
+            Pair(PartitioningStrategy.JSON_KEY, "/unknown/key")).partitionKey()
+        val messageWithNoPayloadButPayloadStrategy = messageNoPayload.toPutRecordsRequest(
+            Pair(PartitioningStrategy.PAYLOAD_HASH, null)).partitionKey()
 
-        assertEquals(messageWithPayloadHashKey, message.getPayloadMd5OrIfNullGetTopic())
-        assertEquals(messageWithMqttTopicKey, message.topic)
-        assertEquals(messageWithTopLevelJsonKey, MessageUtils.MESSAGE_ID)
-        assertEquals(messageWithNestedJsonKey, MessageUtils.NESTED_ID)
+        assertEquals(message.getPayloadMd5OrIfNullGetTopic(), messageWithPayloadHashKey)
+        assertEquals(message.topic, messageWithMqttTopicKey)
+        assertEquals(MessageUtils.MESSAGE_ID, messageWithTopLevelJsonKey)
+        assertEquals(MessageUtils.NESTED_ID, messageWithNestedJsonKey)
+        assertEquals(message.getPayloadMd5OrIfNullGetTopic(), messageWithMissingJsonKey)
+        assertEquals(message.topic, messageWithNoPayloadButPayloadStrategy)
     }
 
     @Test
@@ -37,15 +44,15 @@ class Mqtt5MessageTest {
         val serializedMessage = objectMapper.writeValueAsString(message)
         val deserializedMessage = objectMapper.readValue(serializedMessage, Mqtt5Message::class.java)
 
-        assertEquals(message.topic, deserializedMessage.topic)
-        assertEquals(message.qos, deserializedMessage.qos)
-        assertEquals(message.retain, deserializedMessage.retain)
-        assertEquals(message.messageExpiryInterval, deserializedMessage.messageExpiryInterval)
-        assertEquals(message.payloadFormatIndicator, deserializedMessage.payloadFormatIndicator)
-        assertEquals(message.contentType, deserializedMessage.contentType)
-        assertEquals(message.responseTopic, deserializedMessage.responseTopic)
-        assertEquals(message.correlationData, deserializedMessage.correlationData)
-        assertEquals(message.userProperties, deserializedMessage.userProperties)
-        assertEquals(message.payload, deserializedMessage.payload)
+        assertEquals(deserializedMessage.topic, message.topic)
+        assertEquals(deserializedMessage.qos, message.qos)
+        assertEquals(deserializedMessage.retain, message.retain)
+        assertEquals(deserializedMessage.messageExpiryInterval, message.messageExpiryInterval)
+        assertEquals(deserializedMessage.payloadFormatIndicator, message.payloadFormatIndicator)
+        assertEquals(deserializedMessage.contentType, message.contentType)
+        assertEquals(deserializedMessage.responseTopic, message.responseTopic)
+        assertEquals(deserializedMessage.correlationData, message.correlationData)
+        assertEquals(deserializedMessage.userProperties, message.userProperties)
+        assertEquals(deserializedMessage.payload, message.payload)
     }
 }
