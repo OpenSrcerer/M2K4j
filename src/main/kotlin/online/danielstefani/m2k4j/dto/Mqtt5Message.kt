@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
 import java.nio.ByteBuffer
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class Mqtt5Message @JsonCreator constructor(
+data class Mqtt5Message @JsonCreator constructor(
     @JsonProperty("topic")                  val topic: String,
     @JsonProperty("qos")                    val qos: Int,
     @JsonProperty("retain")                 val retain: Boolean,
@@ -26,6 +26,19 @@ class Mqtt5Message @JsonCreator constructor(
     @JsonProperty("userProperties")         val userProperties: Map<String, String>?,
     @JsonProperty("payload")                val payload: ByteBuffer?
 ) {
+    constructor(mqtt5Message: Mqtt5Message, payload: ByteBuffer?) : this(
+        mqtt5Message.topic,
+        mqtt5Message.qos,
+        mqtt5Message.retain,
+        mqtt5Message.messageExpiryInterval,
+        mqtt5Message.payloadFormatIndicator,
+        mqtt5Message.contentType,
+        mqtt5Message.responseTopic,
+        mqtt5Message.correlationData,
+        mqtt5Message.userProperties,
+        payload
+    )
+
     constructor(mqtt5Message: Mqtt5Message, expiryInterval: Long) : this(
         mqtt5Message.topic,
         mqtt5Message.qos,
@@ -98,6 +111,7 @@ class Mqtt5Message @JsonCreator constructor(
         val partitionKey: String
         try {
             partitionKey = objectMapper.readTree(payload.array()).at(jsonPtrExpr).asText()
+            if (partitionKey.isEmpty()) throw IllegalArgumentException("Missing partition key in payload.")
         } catch (ex: Exception) {
             logger.debug("[client->kinesis] //" +
                     "Failed to use JSON_KEY because of exception [${ex.message}] for message: " +
