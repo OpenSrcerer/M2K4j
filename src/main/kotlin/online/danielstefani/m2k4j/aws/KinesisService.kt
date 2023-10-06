@@ -126,7 +126,8 @@ class KinesisService(
         return this.flatMap {
             Flux.fromIterable(
                 it.second.records
-                    .mapIndexed { i, entry -> if (entry.errorCode.isNotBlank()) it.first.records[i] else null }
+                    .mapIndexed { i, entry ->
+                        if (entry.errorCode?.isNotBlank() == true) it.first.records[i] else null }
                     .filterNotNull()
             )
         }
