@@ -31,7 +31,7 @@ version: "3.8"
 services:
   m2k4j:
     container_name: M2K4j-instance
-    image: ghcr.io/opensrcerer/m2k4j:v0.1.3
+    image: ghcr.io/opensrcerer/m2k4j:v0.1.6
     env_file:
       - .env
 ```
