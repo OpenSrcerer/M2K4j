@@ -1,5 +1,8 @@
 package online.danielstefani.m2k4j.aws
 
+import com.amazonaws.services.kinesis.model.PutRecordsRequest
+import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry
+import com.amazonaws.services.kinesis.model.PutRecordsResult
 import online.danielstefani.m2k4j.dto.Mqtt5Message
 import online.danielstefani.m2k4j.mqtt.Mqtt5Consumer
 import org.slf4j.LoggerFactory
@@ -9,9 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest
-import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
-import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -116,18 +116,17 @@ class KinesisService(
 
     private fun Flux<PutRecordsRequestEntry>.collect(): Mono<PutRecordsRequest> {
         return this.collectList().map { entries ->
-            PutRecordsRequest.builder()
-                .streamARN(kinesisConfig.kinesisStreamArn)
-                .records(entries)
-                .build()
+            PutRecordsRequest()
+                .withStreamARN(kinesisConfig.kinesisStreamArn)
+                .withRecords(entries)
         }
     }
 
-    private fun Flux<Pair<PutRecordsRequest, PutRecordsResponse>>.extractFailedRecords(): Flux<PutRecordsRequestEntry> {
+    private fun Flux<Pair<PutRecordsRequest, PutRecordsResult>>.extractFailedRecords(): Flux<PutRecordsRequestEntry> {
         return this.flatMap {
             Flux.fromIterable(
-                it.second.records()
-                    .mapIndexed { i, entry -> if (entry.errorCode().isNotBlank()) it.first.records()[i] else null }
+                it.second.records
+                    .mapIndexed { i, entry -> if (entry.errorCode.isNotBlank()) it.first.records[i] else null }
                     .filterNotNull()
             )
         }

@@ -30,7 +30,7 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.2")
 
     // ---- AWS SDK ----
-    implementation("software.amazon.awssdk:aws-sdk-java:2.20.80")
+    implementation("com.amazonaws:aws-java-sdk-kinesis:1.12.562")
 
     // ---- Serialization ----
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
