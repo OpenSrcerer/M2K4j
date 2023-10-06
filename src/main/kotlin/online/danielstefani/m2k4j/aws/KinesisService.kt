@@ -70,16 +70,16 @@ class KinesisService(
                 } else {
                     logger.info(
                         "[client->kinesis] // Sent ${messages.size - it.size}/${messages.size} " +
-                                "(${(messages.size - it.size.toFloat()) / messages.size}%) of messages to Kinesis " +
+                                "(${((messages.size - it.size.toFloat()) / messages.size) * 100}%) of messages to Kinesis " +
                                 "stream ${kinesisConfig.kinesisStreamArn}; " +
                                 "Failed messaged were put in the DLQ, and will be " +
-                                "retried later (only once) then discarded if they fail again.")
+                                "retried later then discarded if they fail again. ")
                 }
             }
     }
 
     @Scheduled(initialDelay = 1, fixedRate = 1, timeUnit = TimeUnit.MINUTES)
-    internal fun retryFailedMessagesOnce() {
+    internal fun retryFailedMessages() {
         if (messageDlq.isEmpty())
             return
 
@@ -90,6 +90,7 @@ class KinesisService(
                 logger.info("[client->kinesis] // " +
                         "Retrying to send $messageDlqSize messages to ${kinesisConfig.kinesisStreamArn}")
             }
+            .doOnNext { messageDlq.add(it) }
             .collectList()
             .doOnSuccess {
                 if (it.isEmpty()) {
@@ -97,10 +98,10 @@ class KinesisService(
                             "Successfully sent $messageDlqSize/$messageDlqSize DLQ " +
                             "messages to ${kinesisConfig.kinesisStreamArn}")
                 } else {
-                    logger.info("[client->kinesis] // " +
-                            "Sent ${messageDlqSize - it.size}/$messageDlqSize DLQ " +
-                            "messages to ${kinesisConfig.kinesisStreamArn}." +
-                            "${it.size} messages still failed, discarding.")
+                    logger.info("[client->kinesis] // Sent ${messageDlqSize - it.size}/${messageDlqSize} " +
+                            "(${((messageDlqSize - it.size.toFloat()) / messageDlqSize) * 100}%) DLQ " +
+                            "messages to ${kinesisConfig.kinesisStreamArn}. " +
+                            "${it.size} messages still failed, re-adding to DLQ.")
                 }
             }
             .subscribe()
@@ -111,6 +112,16 @@ class KinesisService(
             .window(MAX_KINESIS_PUT_REQUEST_LENGTH) // Flux<Flux<PutRecordsRequestEntry>> (window of 500)
             .flatMap { it.collect() }
             .flatMap { req -> kinesisClient.putRecords(req) }
+            .collectList()
+            .doOnNext { reqs ->
+                val errors = reqs.flatMap { it.second.records }
+                    .filter { it.errorMessage != null }
+                    .map { it.errorMessage }
+                    .toSet()
+                if (errors.isNotEmpty())
+                    logger.info("[client->kinesis] Kinesis rejected some messages. Cause: $errors")
+            }
+            .flatMapIterable { it }
             .extractFailedRecords()
     }
 

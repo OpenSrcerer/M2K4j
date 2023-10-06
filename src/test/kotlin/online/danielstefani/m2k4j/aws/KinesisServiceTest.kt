@@ -66,23 +66,23 @@ class KinesisServiceTest {
         pushNMessages(messagesToSend).block()
 
         verify(exactly = messagesToSend) { kinesisDlq.add(any()) }
-        assertEquals(kinesisDlq.size(), messagesToSend)
+        assertEquals(messagesToSend, kinesisDlq.size())
     }
 
     @Test
-    fun whenEveryMinuteAndDlqHasItems_thenShouldRetryOnce() {
+    fun whenEveryMinuteAndDlqHasItems_thenShouldRetry() {
         val messagesToSend = 1985 // WE NEED TO GO BACK!
         everyPutRecordsReturnError()
 
         pushNMessages(messagesToSend).block()
-        kinesisService.retryFailedMessagesOnce() // Retry failed messages
+        kinesisService.retryFailedMessages() // Retry failed messages
 
         // Multiplied times two cause once when it
         // first failed, and once for the retry
         verify(exactly = getExpectedKinesisCalls(messagesToSend) * 2) {
             kinesisClient.putRecords(any())
         }
-        assertEquals(kinesisDlq.size(), 0)
+        assertEquals(messagesToSend, kinesisDlq.size())
     }
 
     private fun everyPutRecordsReturnError() {
