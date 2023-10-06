@@ -1,5 +1,9 @@
 package online.danielstefani.m2k4j.aws
 
+import com.amazonaws.services.kinesis.model.PutRecordsRequest
+import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry
+import com.amazonaws.services.kinesis.model.PutRecordsResult
+import com.amazonaws.services.kinesis.model.PutRecordsResultEntry
 import io.mockk.*
 import online.danielstefani.m2k4j.MessageUtils
 import org.junit.jupiter.api.Assertions.*
@@ -10,10 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest
-import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
-import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse
-import software.amazon.awssdk.services.kinesis.model.PutRecordsResultEntry
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -44,7 +44,7 @@ class KinesisServiceTest {
         every { kinesisClient.putRecords(any()) } answers {
             messagesSent.add(this.args[0] as PutRecordsRequest)
             Mono.just(
-                Pair(PutRecordsRequest.builder().build(), PutRecordsResponse.builder().build()))
+                Pair(PutRecordsRequest(), PutRecordsResult()))
         }
 
         pushNMessages(messagesToSend).block()
@@ -54,7 +54,7 @@ class KinesisServiceTest {
         }
         assertEquals( // Makes sure packages are max 500 msgs
             true,
-            messagesSent.all { it.records().size <= 500 }
+            messagesSent.all { it.records.size <= 500 }
         )
     }
 
@@ -88,10 +88,10 @@ class KinesisServiceTest {
     private fun everyPutRecordsReturnError() {
         every { kinesisClient.putRecords(any()) } answers {
             val req = this.args[0] as PutRecordsRequest
-            val res = req.records().map {
-                PutRecordsResultEntry.builder().errorCode("400").errorMessage("test").build()
+            val res = req.records.map {
+                PutRecordsResultEntry().withErrorCode("400").withErrorMessage("test")
             }
-            Mono.just(Pair(req, PutRecordsResponse.builder().records(res).build()))
+            Mono.just(Pair(req, PutRecordsResult().withRecords(res)))
         }
     }
 

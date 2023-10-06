@@ -15,7 +15,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.MonoSink
 import reactor.core.scheduler.Schedulers
-import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
 import java.time.Duration
 
 class Mqtt5MessageControllerTest {
@@ -54,7 +53,7 @@ class Mqtt5MessageControllerTest {
 
         doAnswer {
             messagesSent.addAll(it.arguments[0] as List<Mqtt5Message>)
-            Mono.just(listOf<PutRecordsRequestEntry>())
+            Mono.just(listOf<Any>())
         }.`when`(kinesisService)
             .pushMessages(anyList())
 

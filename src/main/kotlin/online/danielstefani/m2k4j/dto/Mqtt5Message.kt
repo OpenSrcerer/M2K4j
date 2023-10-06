@@ -1,5 +1,6 @@
 package online.danielstefani.m2k4j.dto
 
+import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -9,8 +10,6 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
 import online.danielstefani.m2k4j.aws.PartitioningStrategy
 import org.slf4j.LoggerFactory
 import org.springframework.util.DigestUtils
-import software.amazon.awssdk.core.SdkBytes
-import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry
 import java.nio.ByteBuffer
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -83,10 +82,9 @@ data class Mqtt5Message @JsonCreator constructor(
             PartitioningStrategy.JSON_KEY -> extractPartitionKeyFromJson(strategy.second!!)
         }
 
-        return PutRecordsRequestEntry.builder()
-                .partitionKey(partitionKey) // Use strategy for partition key
-                .data(SdkBytes.fromByteArray(objectMapper.writeValueAsBytes(this)))
-                .build()
+        return PutRecordsRequestEntry()
+                .withPartitionKey(partitionKey) // Use strategy for partition key
+                .withData(ByteBuffer.wrap(objectMapper.writeValueAsBytes(this)))
     }
 
     @JsonIgnore

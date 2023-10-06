@@ -18,17 +18,17 @@ class Mqtt5MessageTest {
         val messageNoPayload = Mqtt5Message(MessageUtils.genDefaultMessage().next().payload, null)
 
         val messageWithPayloadHashKey = message.toPutRecordsRequest(
-            Pair(PartitioningStrategy.PAYLOAD_HASH, null)).partitionKey()
+            Pair(PartitioningStrategy.PAYLOAD_HASH, null)).partitionKey
         val messageWithMqttTopicKey = message.toPutRecordsRequest(
-            Pair(PartitioningStrategy.MQTT_TOPIC, null)).partitionKey()
+            Pair(PartitioningStrategy.MQTT_TOPIC, null)).partitionKey
         val messageWithTopLevelJsonKey = message.toPutRecordsRequest(
-            Pair(PartitioningStrategy.JSON_KEY, "/id")).partitionKey()
+            Pair(PartitioningStrategy.JSON_KEY, "/id")).partitionKey
         val messageWithNestedJsonKey = message.toPutRecordsRequest(
-            Pair(PartitioningStrategy.JSON_KEY, "/obj/nested-id")).partitionKey()
+            Pair(PartitioningStrategy.JSON_KEY, "/obj/nested-id")).partitionKey
         val messageWithMissingJsonKey = message.toPutRecordsRequest(
-            Pair(PartitioningStrategy.JSON_KEY, "/unknown/key")).partitionKey()
+            Pair(PartitioningStrategy.JSON_KEY, "/unknown/key")).partitionKey
         val messageWithNoPayloadButPayloadStrategy = messageNoPayload.toPutRecordsRequest(
-            Pair(PartitioningStrategy.PAYLOAD_HASH, null)).partitionKey()
+            Pair(PartitioningStrategy.PAYLOAD_HASH, null)).partitionKey
 
         assertEquals(message.getPayloadMd5OrIfNullGetTopic(), messageWithPayloadHashKey)
         assertEquals(message.topic, messageWithMqttTopicKey)
