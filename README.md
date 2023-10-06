@@ -53,7 +53,7 @@ MQTT_SUBSCRIPTIONS=# // Subscription topics. Supports a comma separated list of 
 #                      AWS
 ##################################################
 
-AWS_KINESIS_STREAM_ARN= // Required. The ARN of your Kinesis Data Stream. 
+AWS_KINESIS_STREAM_NAME= // Required. The name of your Kinesis Data Stream. 
         
 // The strategy to retrieve the partitioning key for your messages. 
 // Accepts PAYLOAD_HASH, MQTT_TOPIC or custom JSON pointer expression.

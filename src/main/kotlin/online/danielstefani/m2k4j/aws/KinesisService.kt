@@ -61,17 +61,17 @@ class KinesisService(
             .doOnNext { messageDlq.add(it) } // Put messages that didn't go through in the DLQ to try again later
             .collectList()
             .doOnError { logger.error("[client->kinesis] // " +
-                    "Failed to send messages to Kinesis stream ${kinesisConfig.kinesisStreamArn}") }
+                    "Failed to send messages to Kinesis stream ${kinesisConfig.kinesisStreamName}") }
             .doOnSuccess {
                 if (it.isEmpty()) {
                     logger.info(
                         "[client->kinesis] // Successfully sent all (${messages.size}) messages " +
-                                "to Kinesis stream ${kinesisConfig.kinesisStreamArn}")
+                                "to Kinesis stream ${kinesisConfig.kinesisStreamName}")
                 } else {
                     logger.info(
                         "[client->kinesis] // Sent ${messages.size - it.size}/${messages.size} " +
                                 "(${(messages.size - it.size) / messages.size}%) of messages to Kinesis " +
-                                "stream ${kinesisConfig.kinesisStreamArn}; " +
+                                "stream ${kinesisConfig.kinesisStreamName}; " +
                                 "Failed messaged were put in the DLQ, and will be " +
                                 "retried later (only once) then discarded if they fail again.")
                 }
@@ -88,18 +88,18 @@ class KinesisService(
             .pushMessagesToKinesis()
             .doOnSubscribe {
                 logger.info("[client->kinesis] //" +
-                        "Retrying to send $messageDlqSize messages to ${kinesisConfig.kinesisStreamArn}")
+                        "Retrying to send $messageDlqSize messages to ${kinesisConfig.kinesisStreamName}")
             }
             .collectList()
             .doOnSuccess {
                 if (it.isEmpty()) {
                     logger.info("[client->kinesis] //" +
                             "Successfully sent $messageDlqSize/$messageDlqSize DLQ " +
-                            "messages to ${kinesisConfig.kinesisStreamArn}")
+                            "messages to ${kinesisConfig.kinesisStreamName}")
                 } else {
                     logger.info("[client->kinesis] //" +
                             "Sent ${messageDlqSize - it.size}/$messageDlqSize DLQ " +
-                            "messages to ${kinesisConfig.kinesisStreamArn}." +
+                            "messages to ${kinesisConfig.kinesisStreamName}." +
                             "${it.size} messages still failed, discarding.")
                 }
             }
@@ -117,7 +117,7 @@ class KinesisService(
     private fun Flux<PutRecordsRequestEntry>.collect(): Mono<PutRecordsRequest> {
         return this.collectList().map { entries ->
             PutRecordsRequest()
-                .withStreamARN(kinesisConfig.kinesisStreamArn)
+                .withStreamName(kinesisConfig.kinesisStreamName)
                 .withRecords(entries)
         }
     }

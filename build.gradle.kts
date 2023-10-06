@@ -23,6 +23,9 @@ dependencies {
     implementation("org.springframework.integration:spring-integration-mqtt:6.1.3")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.1.4")
 
+    // ---- Validation ----
+    implementation("jakarta.validation:jakarta.validation-api:3.0.2")
+
     // ---- Kotlin ----
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20")
