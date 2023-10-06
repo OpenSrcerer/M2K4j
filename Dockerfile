@@ -1,13 +1,13 @@
 # https://gist.github.com/sumanmaity112/57d196c8f28c6051a8c8e569ec64a953#file-automated-slim-jre-dockerfile
 # Thanks <3
 
-FROM alpine:latest AS BUILD
+FROM gradle:8.4.0-jdk17-jammy AS BUILD
 
 WORKDIR /appbuild
 
 COPY . .
 
-RUN ./gradlew build --no-daemon
+RUN gradle build --no-daemon
 
 FROM amazoncorretto:17-alpine as CORRETTO-DEPS
 
