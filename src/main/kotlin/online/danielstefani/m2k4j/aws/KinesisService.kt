@@ -70,7 +70,7 @@ class KinesisService(
                 } else {
                     logger.info(
                         "[client->kinesis] // Sent ${messages.size - it.size}/${messages.size} " +
-                                "(${(messages.size - it.size) / messages.size}%) of messages to Kinesis " +
+                                "(${(messages.size - it.size.toFloat()) / messages.size}%) of messages to Kinesis " +
                                 "stream ${kinesisConfig.kinesisStreamArn}; " +
                                 "Failed messaged were put in the DLQ, and will be " +
                                 "retried later (only once) then discarded if they fail again.")
@@ -87,17 +87,17 @@ class KinesisService(
         Flux.fromIterable(messageDlq.toList())
             .pushMessagesToKinesis()
             .doOnSubscribe {
-                logger.info("[client->kinesis] //" +
+                logger.info("[client->kinesis] // " +
                         "Retrying to send $messageDlqSize messages to ${kinesisConfig.kinesisStreamArn}")
             }
             .collectList()
             .doOnSuccess {
                 if (it.isEmpty()) {
-                    logger.info("[client->kinesis] //" +
+                    logger.info("[client->kinesis] // " +
                             "Successfully sent $messageDlqSize/$messageDlqSize DLQ " +
                             "messages to ${kinesisConfig.kinesisStreamArn}")
                 } else {
-                    logger.info("[client->kinesis] //" +
+                    logger.info("[client->kinesis] // " +
                             "Sent ${messageDlqSize - it.size}/$messageDlqSize DLQ " +
                             "messages to ${kinesisConfig.kinesisStreamArn}." +
                             "${it.size} messages still failed, discarding.")
