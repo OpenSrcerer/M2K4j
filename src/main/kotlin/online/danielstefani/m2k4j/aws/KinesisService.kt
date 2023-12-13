@@ -73,7 +73,7 @@ class KinesisService(
                                 "(${((messages.size - it.size.toFloat()) / messages.size) * 100}%) of messages to Kinesis " +
                                 "stream ${kinesisConfig.kinesisStreamArn}; " +
                                 "Failed messaged were put in the DLQ, and will be " +
-                                "retried later then discarded if they fail again. ")
+                                "retried later. ")
                 }
             }
     }
